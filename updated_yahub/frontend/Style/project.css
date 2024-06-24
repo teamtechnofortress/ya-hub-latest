@@ -1,0 +1,112 @@
+* {
+    margin: 0px !important;
+}
+.side-nav {
+    background-color: white;
+    height: 100vh;
+}
+.other-cont {
+    margin-left: 80px !important;
+}
+.btn-sm{
+    font-size: 12px !important;
+}
+.table{
+    min-height: 200px;
+}
+.table{
+    font-size: 14px !important;
+}
+.table select.form-control,.table .btn{
+    font-size: 12px !important;
+}
+.advanceFilter label,.advanceFilter input{
+    font-size: 12px !important;
+}
+td .dropdown-menu.show{
+    min-width: 8rem !important;
+}
+td .dropdown{
+    margin-left: 5px !important;
+}
+.bg-danger{
+    color:white;
+}
+@media (max-width: 575px) {
+    .other-cont {
+        margin-left: 0px !important;
+    }
+}
+.icon {
+    color: #444444;
+}
+.nav-active {
+    color: #fd5c29;
+}
+.n-project {
+    background-color: #fd5c29;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+}
+.header img {
+    width: 40px;
+}
+
+.project h1 {
+    font-size: 20px;
+}
+
+.project-box {
+    border-radius: 8px;
+}
+
+.project-box h2 {
+    color: black;
+    font-size: 16px;
+}
+.project-h span {
+    color: #7e7c7c;
+    font-size: 14px;
+}
+.project-h a {
+    color: #7e7c7c;
+    font-size: 22px;
+}
+.project-box p {
+    font-size: 12px;
+    color: #8b8b8b;
+}
+.budget h3 {
+    font-size: 14px;
+    font-weight: 700;
+}
+.budget a {
+    background-color: #fd5c29;
+    color: white;
+    font-size: 12px;
+    border-radius: 7px;
+}
+
+.p-opt-btn {
+    background-color: #f1f3f7;
+}
+.p-opt-btn.active {
+    background-color: #fd5c29;
+    color: white;
+}
+
+.pro-row[class*="content-"] {
+    display: none;
+}
+
+.pro-row.active {
+    display: block;
+}
+.mobile-nav {
+    position: fixed;
+    bottom: 0;
+}
+.mobile-nav a {
+    font-size: 20px;
+}

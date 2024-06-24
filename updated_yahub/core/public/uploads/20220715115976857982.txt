@@ -1,0 +1,42 @@
+ 1 - in this page : https://liemca.com/add-birth-notification
+1 - make fields in 3 cards liek this : https://prnt.sc/20mi0lv
+
+ Father's data : 
+  Father's triple name : text
+  father's surname: text
+  father's profession: text
+  father's nationality: form databse ( country )
+  father's city: text
+  civil registry office: text
+  locality: text
+  family paper number : text
+  family book number: textx
+  father's passport number: text
+  date of issuance of the father's passport : date picker
+  place of issuance of the father's passport: text
+  father's address : text
+ 
+Applicant information:
+Applicant's name : text
+ degree of kinship : text
+
+Birth data :
+Newborn's name :
+ baby type : text
+ birth type: select (single - twin - more than twin) :
+ place of birth : date picker
+ city of birth : textx
+ country: from databe ( country )
+ date of birth: date pciker
+ date of notification :  date :
+
+
+mother's data
+
+Mother's name :
+
+ Mother's surname: text
+ Mother's nationality : from databe ( country )
+ Mother's profession: text
+ Marriage date : date picker
+ Mother's religion : textx

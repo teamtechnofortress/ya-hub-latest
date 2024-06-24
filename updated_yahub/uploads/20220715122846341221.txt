@@ -1,0 +1,9 @@
+1 - add this fields to this menue : https://liemca.com/add-marriage-certificate
+- letter to ( text )
+- doc type ( passport - National ID Card ) : if passport appear current field passport number and passport place and passport expired if national id card appear National ID Card ( number )
+- wife name : text : after kndship degree ( 
+- doc type ( passport - National ID Card ) : if passport appear current field passport number and passport place and passport expired if national id card appear National ID Card ( number )
+- name of the court : text
+- reference number : number
+- reference number date : date picker
+- Civil Registry :
