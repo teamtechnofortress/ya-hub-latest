@@ -80,7 +80,7 @@ tr > td{
                         @endif --}}
                     </div>
                     <div class="col-lg-6">
-                        <input name="invoice_no" type="text" class="form-control" style="margin-bottom: 5px !important" value="" placeholder="{{$placeholder}}">
+                        {{-- <input name="invoice_no" type="text" class="form-control" style="margin-bottom: 5px !important" value="" placeholder="{{$placeholder}}"> --}}
                         <textarea name="date_desc" class="form-control">{{$template[0]->date_desc}}</textarea>
                     </div>
                     </div>
@@ -140,25 +140,25 @@ tr > td{
                         <div class="col-lg-12 text-left">
                             <div class="form-group mt-4">
                                 <label for="contact">Main Template</label>
-                                <select class="custom-select" name="notestempid">
-                                    <option value="0">Open this select Main Temp</option>
+                                <select class="custom-select" name="maintempid" required>
+                                    <option value="">Open this select Main Temp</option>
                                     @foreach($temp as $item)
                                     <option value="{{ $item->id }}">{{ $item->tempName}}</option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>   
-                        <div class="col-lg-12 text-left">
+                        {{-- <div class="col-lg-12 text-left">
                             <div class="form-group mt-4">
                                 <label for="contact">Notes Template</label>
-                                <select class="custom-select" name="maintempid">
-                                    <option value="0">Open this select Note</option>
+                                <select class="custom-select" name="notestempid" required>
+                                    <option value="">Open this select Note</option>
                                     @foreach($notetemp as $item)
                                     <option value="{{ $item->id }}">{{ $item->notename }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                        </div>   
+                        </div>    --}}
                         {{-- <div class="col-lg-12 text-left">
                             <div class="total" style="margin-top: 5px !important;">
                                 <strong>{{$lang=='fr' ? 'Mode de règlement' : 'Payment Type'}}: <input type="text" class="form-control" value="{{$template[0]->payment_type}}" name="payment_type"></strong>

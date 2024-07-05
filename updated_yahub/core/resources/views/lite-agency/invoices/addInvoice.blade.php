@@ -52,11 +52,24 @@ tr > td{
                 <div class="col-md-12 col-sm-12">
                     <div class="row">
                     <div class="col-lg-6">
-                        @if($logo)
+                        @php
+                            $dept_logo = DB::table('departments')
+                                        ->where('created_by', Auth::user()->id)
+                                        ->where('active', 1)
+                                        ->first();
+                        @endphp
+                         @if($dept_logo && isset($dept_logo->department_logo)) {{-- Assuming `logo` is the field containing the logo URL --}}
+                             <img width="220px" src="{{ asset($dept_logo->department_logo) }}" class="img-fluid" alt="logo" />
+                         @elseif($logo)
+                             <img width="220px" src="{{$logo}}" class="img-fluid" alt="logo" />
+                         @else
+                             <img width="220px" src="{{asset('frontend/Pics/logo.png')}}" class="img-fluid" alt="logo" />
+                         @endif
+                        {{-- @if($logo)
                             <img width="220px" src="{{$logo}}" class="img-fluid" alt="logo" />
                         @else
                             <img width="220px" src="{{asset('frontend/Pics/logo.png')}}" class="img-fluid" alt="logo" />
-                        @endif
+                        @endif --}}
                     </div>
                     <div class="col-lg-6">
                             <input name="invoice_no" type="text" class="form-control" style="margin-bottom: 5px !important" value="" placeholder="Invoice No.20221102">
@@ -103,6 +116,17 @@ tr > td{
                     </div>
                     <div class="row mt-50">
                         <div class="col-lg-12 text-left">
+                            <div class="form-group mt-4">
+                                <label for="contact">Main Template</label>
+                                <select class="custom-select" name="maintempid" required>
+                                    <option value="">Open this select Main Temp</option>
+                                    @foreach($temp as $item)
+                                    <option value="{{ $item->id }}">{{ $item->tempName}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div> 
+                        {{-- <div class="col-lg-12 text-left">
                             <div class="total" style="margin-top: 5px !important;">
                                 <strong>Payment Type: <input type="text" class="form-control" value="{{$template[0]->payment_type}}" name="payment_type"></strong>
                             </div>
@@ -118,7 +142,7 @@ tr > td{
                                 <textarea class="form-control"name="notes" rows="10"></textarea>
                             </strong>
                             </div>
-                        </div>
+                        </div> --}}
                         <div class="col-lg-12 text-left">
                             <div class="total" style="margin-top: 50px !important;">
                                 <h5>Seller's signature</h5>

@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Auth;
 use App\Models\MainTemplateforDep;
 use App\Models\NoteTemplateforDep;
+use App\Models\Refrencetable;
 
 class departmentsController extends Controller
 {
@@ -125,16 +126,31 @@ class departmentsController extends Controller
             'active' => 0,
         ]);
         $temp = MainTemplateforDep::where('depid',$id)->get();
-        $notetemp = NoteTemplateforDep::where('depid',$id)->get();
+        $notetempestimate = NoteTemplateforDep::where('depid',$id)->where('notefor','estimate')->get();
+        $notetempinvoice = NoteTemplateforDep::where('depid',$id)->where('notefor','invoice')->get();
+        $notetemppo = NoteTemplateforDep::where('depid',$id)->where('notefor','purchaseOrder')->get();
         // return $temp;
 
 
 
-        return view('department.view_departments',compact('data','temp','notetemp'));
+        return view('department.view_departments',compact('data','temp','notetempestimate','notetempinvoice','notetemppo'));
 
+    }
+    public function Note_view(){
+
+        $data = DB::table('departments')->where('created_by',Auth::user()->id)->get();
+        $dept = DB::table('departments')
+        ->where('created_by', Auth::user()->id)
+        ->where('active', 1)
+        ->first();
+        // $temp = MainTemplateforDep::where('depid',$dept->id)->get();
+        $notetemp = NoteTemplateforDep::where('depid',$dept->id)->get();
+        return view('template.view_note_temp',compact('dept','notetemp'));
     }
     public function create_main_temp(Request $request)
     {
+        // return $request;
+
         // $request->validate([
         //     'temp_name' => 'required|string|max:255',
         //     'ref_number' => 'required|string|max:255',
@@ -152,7 +168,10 @@ class departmentsController extends Controller
         $temp->refnumber = $request->input('ref_number');
         $temp->paymentType = $request->input('payment_typ');
         $temp->dueDate = $request->input('due_date');
-        $temp->Notes = $request->input('notesid');
+        $temp->Notesforinvoice = $request->input('notesinvoiceid');
+        $temp->notespoid = $request->input('notespoid');
+        $temp->notesestimateid = $request->input('notesestimateid');
+        $temp->user_id = Auth::user()->id;
         $temp->depid = $dept->id;
     
         // Save the instance and check if it was successful
@@ -172,12 +191,52 @@ class departmentsController extends Controller
                                         ->where('created_by', Auth::user()->id)
                                         ->where('active', 1)
                                         ->first();
-        $notetemp = NoteTemplateforDep::where('depid',$dept->id)->get();
+        // $notetemp = NoteTemplateforDep::where('depid',$dept->id)->get();
+        $notetempestimate = NoteTemplateforDep::where('depid',$dept->id)->where('notefor','estimate')->get();
+        $notetempinvoice = NoteTemplateforDep::where('depid',$dept->id)->where('notefor','invoice')->get();
+        $notetemppo = NoteTemplateforDep::where('depid',$dept->id)->where('notefor','purchaseOrder')->get();
 
 
-        $temp = MainTemplateforDep::where('id',$id)->where('depid',$dept->id)->first();
-        return view('template.editmaintemp',compact('temp','notetemp'));
+        $temp = MainTemplateforDep::where('id',$id)->where('depid',$dept->id)->where('user_id',Auth::user()->id)->first();
+        // return $notetempinvoice .$temp->Notesforinvoice;
+        return view('template.editmaintemp',compact('temp','notetempestimate','notetempinvoice','notetemppo'));
 
+    }
+    public function updatesavemaintemp(Request $request)
+    {
+        // $request->validate([
+        //     'temp_name' => 'required|string|max:255',
+        //     'ref_number' => 'required|string|max:255',
+        //     'payment_typ' => 'required|string|max:255',
+        //     'due_date' => 'required|date',
+        //     'notesid' => 'nullable|string|max:255',
+        // ]);
+        
+        $dept = DB::table('departments')
+                                        ->where('created_by', Auth::user()->id)
+                                        ->where('active', 1)
+                                        ->first();
+        
+        // Create a new instance of MainTemplateforDep
+        $temp = MainTemplateforDep::where('user_id',Auth::user()->id)->where('id',$request->input('id'))->first();
+        $temp->tempName = $request->input('temp_name');
+        $temp->refnumber = $request->input('ref_number');
+        $temp->paymentType = $request->input('payment_typ');
+        $temp->dueDate = $request->input('due_date');
+        $temp->Notesforinvoice = $request->input('notesinvoiceid');
+        $temp->notespoid = $request->input('notespoid');
+        $temp->notesestimateid = $request->input('notesestimateid');
+        // $temp->user_id = Auth::user()->id;
+        // $temp->depid = $dept->id;
+    
+        // Save the instance and check if it was successful
+        if ($temp->save()) {
+            return back()->with('success', 'Template Layout Saved!');
+        } else {
+            return back()->with('error', 'Template Layout Not Saved!');
+        }
+        
+        
     }
     public function deletemaintemp($id){
         // $query = DB::table('departments')->where('id',$id)->delete();
@@ -204,13 +263,15 @@ class departmentsController extends Controller
         //     'notesid' => 'nullable|string|max:255',
         // ]);
         $dept = DB::table('departments')
-                                        ->where('created_by', Auth::user()->id)
-                                        ->where('active', 1)
-                                        ->first();
+                ->where('created_by', Auth::user()->id)
+                ->where('active', 1)
+                ->first();
         // Create a new instance of MainTemplateforDep
         $temp = new NoteTemplateforDep();
         $temp->notename = $request->input('note_name');
         $temp->note = $request->input('note');
+        $temp->notefor = $request->input('notefor');
+        $temp->user_id = Auth::user()->id;
         $temp->depid = $dept->id;
         // Save the instance and check if it was successful
         if ($temp->save()) {
@@ -220,6 +281,69 @@ class departmentsController extends Controller
         }
         
         
+    }
+    public function updatenotetemp($id){
+
+        // $data = DB::table('departments')->where('id',$id)->first();
+
+        $dept = DB::table('departments')
+                                        ->where('created_by', Auth::user()->id)
+                                        ->where('active', 1)
+                                        ->first();
+        $notetemp = NoteTemplateforDep::where('id',$id)->where('depid',$dept->id)->where('user_id',Auth::user()->id)->first();
+
+
+        // $temp = MainTemplateforDep::where('id',$id)->where('depid',$dept->id)->first();
+        return view('template.editnotetemp',compact('notetemp'));
+
+    }
+    public function updatesavenotetemp(Request $request)
+    {
+        // return $request;
+        // $request->validate([
+        //     'temp_name' => 'required|string|max:255',
+        //     'ref_number' => 'required|string|max:255',
+        //     'payment_typ' => 'required|string|max:255',
+        //     'due_date' => 'required|date',
+        //     'notesid' => 'nullable|string|max:255',
+        // ]);
+        
+        $dept = DB::table('departments')
+                                        ->where('created_by', Auth::user()->id)
+                                        ->where('active', 1)
+                                        ->first();
+        
+        // Create a new instance of MainTemplateforDep
+        $temp = NoteTemplateforDep::where('user_id',Auth::user()->id)->where('id',$request->input('id'))->first();
+        $temp->notename = $request->input('note_name');
+        $temp->note = $request->input('note');
+        $temp->notefor = $request->input('notefor');
+        // $temp->user_id = Auth::user()->id;
+        // $temp->depid = $dept->id;
+    
+        // Save the instance and check if it was successful
+        if ($temp->save()) {
+            return back()->with('success', 'Template Layout Saved!');
+        } else {
+            return back()->with('error', 'Template Layout Not Saved!');
+        }
+        
+        
+    }
+    public function deletenotetemp($id){
+        // $query = DB::table('departments')->where('id',$id)->delete();
+        $dept = DB::table('departments')
+        ->where('created_by', Auth::user()->id)
+        ->where('active', 1)
+        ->first();
+        // $notetemp = MainTemplateforDep::where('depid',$dept->id)->get();
+        $temp = NoteTemplateforDep::where('id',$id)->where('depid',$dept->id)->delete();
+
+        if($temp){
+            return back()->withSuccess('Template Deleted');
+        }else{
+            return back()->withErrors('Something Went Wrong');
+        }
     }
 
     public function departmentChangeTheme(Request $request,$id){

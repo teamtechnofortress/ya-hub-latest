@@ -98,11 +98,11 @@
 <div class="p-sm-4 p-3 project">
     <div class="py-4">
         <div class="row">
-            {{-- <div class="col-lg-6">
-                <img src="{{isset($data) ? $data->department_logo : ''}}" alt="logo" width=120px height=auto>
-            </div> --}}
+            <div class="col-lg-6">
+                <img src="{{isset($dept) ? $dept->department_logo : ''}}" alt="logo" width=120px height=auto>
+            </div>
             <div style="display: flex; justify-content: center; align-items: center;">
-                <h1>{{ isset($data) ? $data->department_name : '' }}</h1>
+                <h1>{{ isset($dept) ? $dept->department_name : '' }}</h1>
                 {{-- <div class="" style="margin-left: 8rem!important">
                     <button>Add Main Template</button>
                     <button>Add Notes Template</button>
@@ -123,30 +123,31 @@
                     <a href="javascript:history.back()" class="btn btn-light btn-sm ml-2"><i class="fa fa-angle-left"></i> Back</a>
                 @endif
                 <!-- <a href="#0" class="btn btn-light btn-sm btn-filter" onclick="$('.advanceFilter').toggle('slow')">Advanced Filters</a> -->
-                {{-- <a href="#0" class="btn btn-primary btn-sm btn-pdf d-none"onclick="$('.table').DataTable().buttons('.buttons-pdf').trigger()">Export PDF</a> --}}
-                {{-- <a href="#0" class="btn btn-primary btn-sm d-none" onclick="$('.table').DataTable().buttons('.buttons-csv').trigger()">Export CSV</a> --}}
+                <a href="#0" class="btn btn-primary btn-sm btn-pdf d-none"onclick="$('.table').DataTable().buttons('.buttons-pdf').trigger()">Export PDF</a>
+                <a href="#0" class="btn btn-primary btn-sm d-none" onclick="$('.table').DataTable().buttons('.buttons-csv').trigger()">Export CSV</a>
+                {{-- <a  href="{{url()}}"  class="btn btn-primary btn-sm">View Note Template</a> --}}
                 {{-- <a  href="#0"  class="btn btn-primary btn-sm addnotetemp">Add Note Template</a> --}}
                 {{-- <a  href="#0" data-toggle="modal" data-target="#addTaskModal" class="btn btn-primary btn-sm addmaintemp">Add Main Template</a> --}}
             </div>
         </div>
-        {{-- <div class="col-md-12 note-form" style="display:none">
+        <div class="col-md-12 note-form" style="display:none">
             <form action="{{url('create_note_temp')}}" method="post" id="form-task" data-action="" enctype="multipart/form-data">
                 @csrf
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group mt-4">
                             <label for="end_date">Note Name</label>
-                            <input type="text" class="form-control task_date" name="note_name" id="dept_name" placeholder="" required>
+                            <input type="text" class="form-control task_date" name="note_name" id="dept_name" placeholder="Note Name" required>
                         </div>
                     </div>
                     <div class="col-md-6"></div>
                     <div class="col-md-6">
                         <div class="form-group mt-4">
                             <label for="exampleFormControlTextarea1">Note</label>
-                            <textarea class="form-control" id="exampleFormControlTextarea1" name="note" rows="3"></textarea>
+                            <textarea class="form-control" id="exampleFormControlTextarea1" name="note" placeholder="Note" rows="3"></textarea>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    {{-- <div class="col-md-6">
                         <div class="form-group mt-4">
                             <label for="contact">Payment Type</label>
                             <input type="text" name="payment_typ" id="payment_typ" class="form-control contact_task_id" required />
@@ -168,7 +169,7 @@
                                 <option value="3">Three</option>
                             </select>
                         </div>
-                    </div>     
+                    </div>      --}}
                     <div class="col-md-6">
                         <div class="form-group mt-5 pt-5">
                             <a href="#0" class="btn btn-light cancelnote">Cancel</a>
@@ -177,92 +178,56 @@
                     </div>
                 </div>
             </form>
-         </div> --}}
-        <div class="col-md-12 task-form" style="">
-            <form action="{{url('updatesavemaintemp')}}" method="post" id="form-task" data-action="" enctype="multipart/form-data">
+         </div>
+        <div class="col-md-12 task-form" style="display:none">
+            <form action="{{url('create_main_temp')}}" method="post" id="form-task" data-action="" enctype="multipart/form-data">
                 @csrf
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group mt-4">
                             <label for="end_date">Template Name</label>
-                            <input type="hidden" class="form-control task_date" name="id" id="id" placeholder="" value="{{$temp->id}}" required>
-                            <input type="text" class="form-control task_date" name="temp_name" id="dept_name" placeholder="" value="{{$temp->tempName}}" required>
+                            <input type="text" class="form-control task_date" name="temp_name" id="dept_name" placeholder="Template Name" required>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group mt-4">
                             <label for="dept_logo">Refrence Number</label>
-                            <input type="text" name="ref_number" id="ref_number" class="form-control" value="{{$temp->refnumber}}" readonly />
+                            <input type="text" name="ref_number" id="ref_number" class="form-control" placeholder="Estimate No. D/202211011" required />
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group mt-4">
                             <label for="contact">Payment Type</label>
-                            <input type="text" name="payment_typ" id="payment_typ" class="form-control contact_task_id" value="{{$temp->paymentType}}" required />
+                            <input type="text" name="payment_typ" id="payment_typ" class="form-control contact_task_id" placeholder="pay_typ" required />
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group mt-4">
                             <label for="contact">Due Date</label>
-                            <input type="date" name="due_date" id="payment_typ" class="form-control contact_task_id" value="{{$temp->dueDate}}" required />
+                            <input type="date" name="due_date" id="payment_typ" class="form-control contact_task_id" required />
                         </div>
                     </div>
-                    {{-- <div class="col-md-6">
+                    <div class="col-md-6">
                         <div class="form-group mt-4">
                             <label for="contact">Notes</label>
                             <select class="custom-select" name="notesid">
-                                <option value="0">Open this select menu</option>
+                                <option value="">Open this select menu</option>
                                 @foreach($notetemp as $item)
-                                <option value="{{ $item->id }}" {{ $temp->Notes == $item->id ? 'selected' : '' }}>
-                                    {{ $item->notename }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>      --}}
-                    <div class="col-md-6">
-                        <div class="form-group mt-4">
-                            <label for="contact">Notes For Invoice</label>
-                            <select class="custom-select" name="notesinvoiceid">
-                                <option value="">Open this select menu</option>
-                                @foreach($notetempinvoice as $item)
-                                <option value="{{ $item->id }}" {{ $temp->Notesforinvoice == $item->id ? 'selected' : '' }}>{{ $item->notename }}</option>
+                                <option value="{{ $item->id }}">{{ $item->notename }}</option>
                                 @endforeach
                             </select>
                         </div>
                     </div>     
-                    <div class="col-md-6">
-                        <div class="form-group mt-4">
-                            <label for="contact">Notes For P/O</label>
-                            <select class="custom-select" name="notespoid">
-                                <option value="">Open this select menu</option>
-                                @foreach($notetemppo as $item)
-                                <option value="{{ $item->id }}" {{ $temp->notespoid == $item->id ? 'selected' : '' }}>{{ $item->notename }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>     
-                    <div class="col-md-6">
-                        <div class="form-group mt-4">
-                            <label for="contact">Notes For Estimaet</label>
-                            <select class="custom-select" name="notesestimateid">
-                                <option value="">Open this select menu</option>
-                                @foreach($notetempestimate as $item)
-                                <option value="{{ $item->id }}" {{ $temp->notesestimateid == $item->id ? 'selected' : '' }}>{{ $item->notename }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div> 
                     <div class="col-md-6">
                         <div class="form-group mt-5">
-                            {{-- <a href="#0" class="btn btn-light cancelmain">Cancel</a> --}}
+                            <a href="#0" class="btn btn-light cancelmain">Cancel</a>
                             <input type="submit" class="btn btn-secondary" value="Submit">
                         </div>
                     </div>
                 </div>
             </form>
          </div>
-        {{-- <div class="row mt-4">
+        <div class="row mt-4">
             <div class="col-md-12 col-sm-12">
                 <div class="table-responsive">
                     <table class="table table-stripped table-bordered" id="department_table" style="position: static;">
@@ -270,34 +235,30 @@
                             <tr>
                             	@php
                             	@endphp
-                                <th>Template Name</th>
-                                <th>Refrence Number</th>
-                                <th>Payment Type</th>
-                                <th>Due Date</th>
+                                <th>Note Name</th>
+                                <th>Note</th>
+                                <th>Note For</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
                         <tbody> 
-                            @foreach($temp as $item)
+                            @foreach($notetemp as $item)
                                 <tr>
-                                    <td><a href="{{url('inside_departments/'.$department->id)}}">{{$department->department_id}}</a></td>
-                                    <td>{{$item->tempName}}</td>
-                                    <td>{{$item->refnumber}}</td>
-                                    <td>{{$item->paymentType}}</td>
-                                    <td>{{$item->dueDate}}</td>
-                                    <td><a href="">sasa</a></td>
-                                    <td><img src="" alt="abcd" width=40px height=auto></td>
+                                    {{-- <td><a href="{{url('inside_departments/'.$department->id)}}">{{$department->department_id}}</a></td> --}}
+                                    <td>{{$item->notename}}</td>
+                                    <td>{{$item->note}}</td>
+                                    <td>{{$item->notefor}}</td>
+                                    {{-- <td>{{$item->dueDate}}</td> --}}
+                                    {{-- <td><a href="">sasa</a></td> --}}
+                                    {{-- <td><img src="" alt="abcd" width=40px height=auto></td> --}}
                                     <td>
-                                    <a href="{{ url('updatedepartments/' . $item->id) }}" class="btn btn-light btn-sm">
+                                    <a href="{{ url('updatenotetemp/' . $item->id) }}" class="btn btn-light btn-sm">
                                             <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="" class="btn btn-light btn-sm">
-                                            <i class="fas fa-edit"></i>
-                                    </a>
-                                        <a  href=""
+                                        {{-- <a  href="{{ url('deletenotetemp/' . $item->id) }}"
                                     class="btn bg-danger deleteDept btn-sm">
                                             <i class="fas fa-trash"></i>
-                                        </a>
+                                        </a> --}}
                                     </td>
                                 </tr> 
 
@@ -309,10 +270,10 @@
             <div class="col-md-12 col-sm-12" style="position: relative">
                 <div class="total_info"></div>
             </div>
-        </div> --}}
+        </div>
     </div>
 </div>
-{{-- <script>
+<script>
     $('.addmaintemp').click(function(){
         $('.table').toggle('slow')
         $('.task-form').toggle('slow')
@@ -338,7 +299,7 @@
         clear_form()
     })
    
-</script> --}}
+</script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
 <!-- <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
 <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script> -->

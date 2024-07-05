@@ -426,10 +426,16 @@ Route::get('/departments',[departmentsController::class,'departments_view'])->na
 Route::get('/add_view',[departmentsController::class,'add_view'])->name('add_view');
 
 Route::post('/add_departments',[departmentsController::class,'add_departments'])->name('add_departments');
+Route::get('/view_note_temp',[departmentsController::class,'Note_view'])->name('view_note_temp');
 Route::post('/create_main_temp',[departmentsController::class,'create_main_temp'])->name('create_main_temp');
 Route::post('/create_note_temp',[departmentsController::class,'create_note_temp'])->name('create_note_temp');
 Route::get('/updatemaintemp/{id}',[departmentsController::class,'updatemaintemp'])->name('updatemaintemp');
+Route::post('/updatesavemaintemp',[departmentsController::class,'updatesavemaintemp'])->name('updatesavemaintemp');
+Route::get('/updatenotetemp/{id}',[departmentsController::class,'updatenotetemp'])->name('updatenotetemp');
+Route::post('/updatesavenotetemp',[departmentsController::class,'updatesavenotetemp'])->name('updatesavenotetemp');
 Route::get('/deletemaintemp/{id}',[departmentsController::class,'deletemaintemp'])->name('deletemaintemp');
+Route::get('/deletenotetemp/{id}',[departmentsController::class,'deletenotetemp'])->name('deletenotetemp');
+// Route::get('/updatenotetemp/{id}',[departmentsController::class,'updatenotetemp'])->name('updatenotetemp');
 Route::get('/updatedepartments/{id}',[departmentsController::class,'updatedepartments'])->name('updatedepartments');
 Route::post('/saveupdatedepartments',[departmentsController::class,'saveupdatedepartments'])->name('saveupdatedepartments');
 Route::get('/delete_departments/{id}',[departmentsController::class,'delete_departments'])->name('delete_departments');

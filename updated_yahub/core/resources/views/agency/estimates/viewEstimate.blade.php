@@ -122,8 +122,24 @@
                             <img width="220px" src="{{asset('frontend/Pics/logo.png')}}" class="img-fluid" alt="logo" />
                         @endif --}}
                     </div>
+                    @php
+                        if($template_data[0]->maintempid)
+                        {
+                            $maintemp = DB::table('main_templatefor_deps')
+                                        ->where('user_id', Auth::user()->id)
+                                        ->where('id', $template_data[0]->maintempid)
+                                        ->first();
+                        }
+                        if($template_data[0]->notesestimateid)
+                        {
+                            $notetemp = DB::table('note_templatefor_deps')
+                                        ->where('user_id', Auth::user()->id)
+                                        ->where('id', $template_data[0]->notesestimateid)
+                                        ->first();
+                        }
+                        @endphp
                     <div class="col-lg-6">
-                        <p><strong class="or-heading">{{$template_data[0]->invoice_no}}</strong></p>
+                        <p><strong class="or-heading">{{$template_data[0]->maintempid!= Null ? $maintemp->refnumber  : $template_data[0]->invoice_no}}</strong></p>
                         <p><?=nl2br($template[0]->date_desc)?></p>
                     </div>
                 </div>
@@ -243,7 +259,7 @@
                             <strong class="or">{{$lang=='fr' ? 'À payer' : 'Total Due'}}: {{$lang=='en' ? $currency : ''}} <strong class="or fw6 total_gross_c" style="font-size: 20px"> {{$total_gross}}</strong>{{$lang=='fr' ? $currency : ''}}</strong>
                         </div>
                         <div class="total" style="margin-top: 5px !important;">
-                            <strong>{{$lang=='fr' ? 'Mode de règlement' : 'Payment Type'}}: </strong><span>{{$template[0]->payment_type}}</span>
+                            <strong>{{$lang=='fr' ? 'Mode de règlement' : 'Payment Type'}}: </strong><span>{{$template_data[0]->maintempid!= Null ? $maintemp->paymentType : $template[0]->payment_type}}</span>
                         </div>
                     </div>
                 </div>
@@ -251,7 +267,7 @@
                     <div class="col-lg-12 text-left">
                         <div class="total" style="margin-top: 5px !important;">
                             <strong>{{$lang=='fr' ? 'Informations spécifiques' : 'Notes'}}: </strong>
-                            <p class="mt-3" style="font-size:12px"><?=nl2br($template[0]->notes)?></p>
+                            <p class="mt-3" style="font-size:12px"><?=nl2br($template_data[0]->notesestimateid!= Null ? $notetemp->note : $template[0]->notes)?></p>
                         </div>
                     </div>
                     <div class="col-lg-12 text-left">

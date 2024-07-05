@@ -125,6 +125,7 @@
                 <!-- <a href="#0" class="btn btn-light btn-sm btn-filter" onclick="$('.advanceFilter').toggle('slow')">Advanced Filters</a> -->
                 <a href="#0" class="btn btn-primary btn-sm btn-pdf d-none"onclick="$('.table').DataTable().buttons('.buttons-pdf').trigger()">Export PDF</a>
                 <a href="#0" class="btn btn-primary btn-sm d-none" onclick="$('.table').DataTable().buttons('.buttons-csv').trigger()">Export CSV</a>
+                <a  href="{{url('view_note_temp')}}"  class="btn btn-primary btn-sm">View Note Template</a>
                 <a  href="#0"  class="btn btn-primary btn-sm addnotetemp">Add Note Template</a>
                 <a  href="#0" data-toggle="modal" data-target="#addTaskModal" class="btn btn-primary btn-sm addmaintemp">Add Main Template</a>
             </div>
@@ -136,14 +137,25 @@
                     <div class="col-md-6">
                         <div class="form-group mt-4">
                             <label for="end_date">Note Name</label>
-                            <input type="text" class="form-control task_date" name="note_name" id="dept_name" placeholder="" required>
+                            <input type="text" class="form-control task_date" name="note_name" id="dept_name" placeholder="Note Name" required>
                         </div>
                     </div>
-                    <div class="col-md-6"></div>
                     <div class="col-md-6">
                         <div class="form-group mt-4">
-                            <label for="exampleFormControlTextarea1">Note</label>
-                            <textarea class="form-control" id="exampleFormControlTextarea1" name="note" rows="3"></textarea>
+                            <label for="contact">Notes For</label>
+                            <select class="custom-select" name="notefor" id="noteforSelect" required onchange="updateLabel()">
+                                <option value="">Open this select menu</option>
+                                <option value="invoice">Invoice</option>
+                                <option value="estimate">Estimate</option>
+                                <option value="purchaseOrder">PurchaseOrder</option>
+                            </select>
+                        </div>
+                    </div>  
+                    
+                    <div class="col-md-6">
+                        <div class="form-group mt-4">
+                            <label for="exampleFormControlTextarea1" id="noteLabel">Note</label>
+                            <textarea class="form-control" id="exampleFormControlTextarea1" name="note" placeholder="Note" rows="3"></textarea>
                         </div>
                     </div>
                     {{-- <div class="col-md-6">
@@ -157,18 +169,8 @@
                             <label for="contact">Payment Type</label>
                             <input type="date" name="due_date" id="payment_typ" class="form-control contact_task_id" required />
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group mt-4">
-                            <label for="contact">Notes</label>
-                            <select class="custom-select" name="notesid">
-                                <option selected>Open this select menu</option>
-                                <option value="1">One</option>
-                                <option value="2">Two</option>
-                                <option value="3">Three</option>
-                            </select>
-                        </div>
-                    </div>      --}}
+                    </div>--}}
+                        
                     <div class="col-md-6">
                         <div class="form-group mt-5 pt-5">
                             <a href="#0" class="btn btn-light cancelnote">Cancel</a>
@@ -179,25 +181,61 @@
             </form>
          </div>
         <div class="col-md-12 task-form" style="display:none">
+            @php
+            use Carbon\Carbon;
+            use Illuminate\Support\Facades\DB;
+            use Illuminate\Support\Facades\Auth;
+                $lastRecord = DB::table('main_templatefor_deps')
+                            ->where('user_id', Auth::user()->id)
+                            ->latest('id')  // Assuming 'id' is the primary key and is incrementing
+                            ->first();
+                            $year = Carbon::now()->year;
+
+                            if($lastRecord)
+                            {
+                                $lastdigit = $lastRecord->refnumber;
+                                $ref = "REF" . $year . $lastRecord->id + 1 . '001';
+                            }
+                            else {
+                                $ref = "REF" . $year . 1 .'001';
+                            }
+                //  $lastRecorddata = DB::table('template_data')
+                //             ->where('user_id', Auth::user()->id)
+                //             ->latest('created_at')  // Use 'created_at' to get the latest record
+                //             ->first();
+
+                            
+
+                            // if($lastdigit)
+                            // {
+                            //     if (substr($lastdigit, 0, 3) === 'REF' && substr($lastdigit, -3) === '001') {
+                            //             $ref = "REF" . $year . ($lastRecord->id + 1) . ($lastdigit + 1);
+                            //         }
+                            //         else {
+                            //             $ref = "REF" . $year . $lastRecord->id + 1 . '001';
+                            //         }
+                            // }
+            @endphp
+            {{-- {{$lastRecord->id + 1}} --}}
             <form action="{{url('create_main_temp')}}" method="post" id="form-task" data-action="" enctype="multipart/form-data">
                 @csrf
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group mt-4">
                             <label for="end_date">Template Name</label>
-                            <input type="text" class="form-control task_date" name="temp_name" id="dept_name" placeholder="" required>
+                            <input type="text" class="form-control task_date" name="temp_name" id="dept_name" placeholder="Template Name" required>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group mt-4">
                             <label for="dept_logo">Refrence Number</label>
-                            <input type="text" name="ref_number" id="ref_number" class="form-control" required />
+                            <input type="text" name="ref_number" id="ref_number" class="form-control" value="{{$ref}}" placeholder="Estimate No. D/202211011" readonly  />
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group mt-4">
                             <label for="contact">Payment Type</label>
-                            <input type="text" name="payment_typ" id="payment_typ" class="form-control contact_task_id" required />
+                            <input type="text" name="payment_typ" id="payment_typ" class="form-control contact_task_id" placeholder="pay_typ" required />
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -208,10 +246,32 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group mt-4">
-                            <label for="contact">Notes</label>
-                            <select class="custom-select" name="notesid">
-                                <option value="0">Open this select menu</option>
-                                @foreach($notetemp as $item)
+                            <label for="contact">Notes For Invoice</label>
+                            <select class="custom-select" name="notesinvoiceid">
+                                <option value="">Open this select menu</option>
+                                @foreach($notetempinvoice as $item)
+                                <option value="{{ $item->id }}">{{ $item->notename }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>     
+                    <div class="col-md-6">
+                        <div class="form-group mt-4">
+                            <label for="contact">Notes For P/O</label>
+                            <select class="custom-select" name="notespoid">
+                                <option value="">Open this select menu</option>
+                                @foreach($notetemppo as $item)
+                                <option value="{{ $item->id }}">{{ $item->notename }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>     
+                    <div class="col-md-6">
+                        <div class="form-group mt-4">
+                            <label for="contact">Notes For Estimaet</label>
+                            <select class="custom-select" name="notesestimateid">
+                                <option value="">Open this select menu</option>
+                                @foreach($notetempestimate as $item)
                                 <option value="{{ $item->id }}">{{ $item->notename }}</option>
                                 @endforeach
                             </select>
@@ -255,13 +315,10 @@
                                     <a href="{{ url('updatemaintemp/' . $item->id) }}" class="btn btn-light btn-sm">
                                             <i class="fas fa-edit"></i>
                                     </a>
-                                    {{-- <a href="" class="btn btn-light btn-sm">
-                                            <i class="fas fa-edit"></i>
-                                    </a> --}}
-                                        <a  href="{{ url('deletemaintemp/' . $item->id) }}"
+                                        {{-- <a  href="{{ url('deletemaintemp/' . $item->id) }}"
                                     class="btn bg-danger deleteDept btn-sm">
                                             <i class="fas fa-trash"></i>
-                                        </a>
+                                        </a> --}}
                                     </td>
                                 </tr> 
 
@@ -276,6 +333,28 @@
         </div>
     </div>
 </div>
+
+<script>
+    function updateLabel() {
+        const selectElement = document.getElementById('noteforSelect');
+        const labelElement = document.getElementById('noteLabel');
+        const selectedValue = selectElement.value;
+    
+        switch(selectedValue) {
+            case 'invoice':
+                labelElement.innerText = 'Bank Details';
+                break;
+            case 'estimate':
+                labelElement.innerText = 'Terms and Conditions';
+                break;
+            case 'purchaseOrder':
+                labelElement.innerText = 'Project Instructions';
+                break;
+            default:
+                labelElement.innerText = 'Note';
+        }
+    }
+    </script>
 <script>
     $('.addmaintemp').click(function(){
         $('.table').toggle('slow')

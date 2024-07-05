@@ -129,36 +129,47 @@
                 {{-- <a  href="#0" data-toggle="modal" data-target="#addTaskModal" class="btn btn-primary btn-sm addmaintemp">Add Main Template</a> --}}
             </div>
         </div>
-        {{-- <div class="col-md-12 note-form" style="display:none">
-            <form action="{{url('create_note_temp')}}" method="post" id="form-task" data-action="" enctype="multipart/form-data">
+        <div class="col-md-12 note-form" style="">
+            <form action="{{url('updatesavenotetemp')}}" method="post" id="form-task" data-action="" enctype="multipart/form-data">
                 @csrf
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group mt-4">
                             <label for="end_date">Note Name</label>
-                            <input type="text" class="form-control task_date" name="note_name" id="dept_name" placeholder="" required>
+                            <input type="hidden" class="form-control task_date" name="id" id="dept_name" value="{{$notetemp->id}}" required>
+                            <input type="text" class="form-control task_date" name="note_name" id="dept_name" value="{{$notetemp->notename}}" required>
                         </div>
                     </div>
-                    <div class="col-md-6"></div>
+                    <div class="col-md-6">
+                        <div class="form-group mt-4">
+                            <label for="contact">Notes For</label>
+                            <select class="custom-select" name="notefor" required>
+                                <option value="">Open this select menu</option>
+                                <option value="invoice" {{ $notetemp->notefor == 'invoice' ? 'selected' : '' }}>Invoice</option>
+                                <option value="estimate" {{ $notetemp->notefor == 'estimate' ? 'selected' : '' }}>Estimate</option>
+                                <option value="purchaseOrder" {{ $notetemp->notefor == 'purchaseOrder' ? 'selected' : '' }}>PurchaseOrder</option>
+                            </select>
+                        </div>
+                    </div>  
                     <div class="col-md-6">
                         <div class="form-group mt-4">
                             <label for="exampleFormControlTextarea1">Note</label>
-                            <textarea class="form-control" id="exampleFormControlTextarea1" name="note" rows="3"></textarea>
+                            <textarea class="form-control" id="exampleFormControlTextarea1" name="note" rows="3">{{$notetemp->note}}</textarea>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    {{-- <div class="col-md-6">
                         <div class="form-group mt-4">
                             <label for="contact">Payment Type</label>
                             <input type="text" name="payment_typ" id="payment_typ" class="form-control contact_task_id" required />
                         </div>
-                    </div>
-                    <div class="col-md-6">
+                    </div> --}}
+                    {{-- <div class="col-md-6">
                         <div class="form-group mt-4">
                             <label for="contact">Payment Type</label>
                             <input type="date" name="due_date" id="payment_typ" class="form-control contact_task_id" required />
                         </div>
-                    </div>
-                    <div class="col-md-6">
+                    </div> --}}
+                    {{-- <div class="col-md-6">
                         <div class="form-group mt-4">
                             <label for="contact">Notes</label>
                             <select class="custom-select" name="notesid">
@@ -168,17 +179,17 @@
                                 <option value="3">Three</option>
                             </select>
                         </div>
-                    </div>     
+                    </div>      --}}
                     <div class="col-md-6">
                         <div class="form-group mt-5 pt-5">
-                            <a href="#0" class="btn btn-light cancelnote">Cancel</a>
+                            {{-- <a href="#0" class="btn btn-light cancelnote">Cancel</a> --}}
                             <input type="submit" class="btn btn-secondary" value="Submit">
                         </div>
                     </div>
                 </div>
             </form>
-         </div> --}}
-        <div class="col-md-12 task-form" style="">
+         </div>
+        {{-- <div class="col-md-12 task-form" style="">
             <form action="{{url('updatesavemaintemp')}}" method="post" id="form-task" data-action="" enctype="multipart/form-data">
                 @csrf
                 <div class="row">
@@ -192,7 +203,7 @@
                     <div class="col-md-6">
                         <div class="form-group mt-4">
                             <label for="dept_logo">Refrence Number</label>
-                            <input type="text" name="ref_number" id="ref_number" class="form-control" value="{{$temp->refnumber}}" readonly />
+                            <input type="text" name="ref_number" id="ref_number" class="form-control" value="{{$temp->refnumber}}" required />
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -207,7 +218,7 @@
                             <input type="date" name="due_date" id="payment_typ" class="form-control contact_task_id" value="{{$temp->dueDate}}" required />
                         </div>
                     </div>
-                    {{-- <div class="col-md-6">
+                    <div class="col-md-6">
                         <div class="form-group mt-4">
                             <label for="contact">Notes</label>
                             <select class="custom-select" name="notesid">
@@ -219,49 +230,16 @@
                                 @endforeach
                             </select>
                         </div>
-                    </div>      --}}
-                    <div class="col-md-6">
-                        <div class="form-group mt-4">
-                            <label for="contact">Notes For Invoice</label>
-                            <select class="custom-select" name="notesinvoiceid">
-                                <option value="">Open this select menu</option>
-                                @foreach($notetempinvoice as $item)
-                                <option value="{{ $item->id }}" {{ $temp->Notesforinvoice == $item->id ? 'selected' : '' }}>{{ $item->notename }}</option>
-                                @endforeach
-                            </select>
-                        </div>
                     </div>     
-                    <div class="col-md-6">
-                        <div class="form-group mt-4">
-                            <label for="contact">Notes For P/O</label>
-                            <select class="custom-select" name="notespoid">
-                                <option value="">Open this select menu</option>
-                                @foreach($notetemppo as $item)
-                                <option value="{{ $item->id }}" {{ $temp->notespoid == $item->id ? 'selected' : '' }}>{{ $item->notename }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>     
-                    <div class="col-md-6">
-                        <div class="form-group mt-4">
-                            <label for="contact">Notes For Estimaet</label>
-                            <select class="custom-select" name="notesestimateid">
-                                <option value="">Open this select menu</option>
-                                @foreach($notetempestimate as $item)
-                                <option value="{{ $item->id }}" {{ $temp->notesestimateid == $item->id ? 'selected' : '' }}>{{ $item->notename }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div> 
                     <div class="col-md-6">
                         <div class="form-group mt-5">
-                            {{-- <a href="#0" class="btn btn-light cancelmain">Cancel</a> --}}
+                            <a href="#0" class="btn btn-light cancelmain">Cancel</a>
                             <input type="submit" class="btn btn-secondary" value="Submit">
                         </div>
                     </div>
                 </div>
             </form>
-         </div>
+         </div> --}}
         {{-- <div class="row mt-4">
             <div class="col-md-12 col-sm-12">
                 <div class="table-responsive">

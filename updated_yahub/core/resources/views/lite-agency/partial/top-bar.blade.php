@@ -9,10 +9,12 @@
     </style>
     <nav class="navbar navbar-expand-lg navbar-light" style="background-color: transparent !important">
         <a class="navbar-brand" href="#">
-        @php
+            @php
             $dept_logo = DB::table('departments')->where('created_by',Auth::user()->id)->where('active',1)->first();
             @endphp
             @isset($dept_logo)
+            <img src="{{$dept_logo->department_logo}}" class="img-fluid" alt="logo" />
+            @else
             @if($logo)
                 <img src="{{$logo}}" class="img-fluid" alt="logo" />
             @else

@@ -103,16 +103,45 @@
             <div class="col-md-12 col-sm-12">
                 <div class="row">
                     <div class="col-lg-6">
-                        @if($logo)
+                        @php
+                            $dept_logo = DB::table('departments')
+                                        ->where('created_by', Auth::user()->id)
+                                        ->where('active', 1)
+                                        ->first();
+                        @endphp
+                         @if($dept_logo && isset($dept_logo->department_logo)) {{-- Assuming `logo` is the field containing the logo URL --}}
+                             <img width="220px" src="{{ asset($dept_logo->department_logo) }}" class="img-fluid" alt="logo" />
+                         @elseif($logo)
+                             <img width="220px" src="{{$logo}}" class="img-fluid" alt="logo" />
+                         @else
+                             <img width="220px" src="{{asset('frontend/Pics/logo.png')}}" class="img-fluid" alt="logo" />
+                         @endif
+                        {{-- @if($logo)
                             <img width="220px" src="{{$logo}}" class="img-fluid" alt="logo" />
                         @else
                             <img width="220px" src="{{asset('frontend/Pics/logo.png')}}" class="img-fluid" alt="logo" />
-                        @endif
+                        @endif --}}
                     </div>
-                    <div class="col-lg-6">
-                        <p><strong class="or-heading">{{$template_data[0]->invoice_no}}</strong></p>
-                        <p><?=nl2br($template[0]->date_desc)?></p>
-                    </div>
+                    @php
+                        if($template_data[0]->maintempid)
+                        {
+                            $maintemp = DB::table('main_templatefor_deps')
+                                        ->where('user_id', Auth::user()->id)
+                                        ->where('id', $template_data[0]->maintempid)
+                                        ->first();
+                        }
+                        if($template_data[0]->notesestimateid)
+                        {
+                            $notetemp = DB::table('note_templatefor_deps')
+                                        ->where('user_id', Auth::user()->id)
+                                        ->where('id', $template_data[0]->notesestimateid)
+                                        ->first();
+                        }
+                        @endphp
+                        <div class="col-lg-6">
+                            <p><strong class="or-heading">{{$template_data[0]->maintempid!= Null ? $maintemp->refnumber  : $template_data[0]->invoice_no}}</strong></p>
+                            <p><?=nl2br($template[0]->date_desc)?></p>
+                        </div>
                 </div>
                 <div class="row mt-100">
                     <div class="col-6">
@@ -230,7 +259,7 @@
                             <strong class="or">{{$lang=='fr' ? 'À payer' : 'Total Due'}}: {{$lang=='en' ? $currency : ''}} <strong class="or fw6 total_gross_c" style="font-size: 20px"> {{$total_gross}}</strong>{{$lang=='fr' ? $currency : ''}}</strong>
                         </div>
                         <div class="total" style="margin-top: 5px !important;">
-                            <strong>{{$lang=='fr' ? 'Mode de règlement' : 'Payment Type'}}: </strong><span>{{$template[0]->payment_type}}</span>
+                            <strong>{{$lang=='fr' ? 'Mode de règlement' : 'Payment Type'}}: </strong><span>{{$template_data[0]->maintempid!= Null ? $maintemp->paymentType : $template[0]->payment_type}}</span>
                         </div>
                     </div>
                 </div>
@@ -238,7 +267,7 @@
                     <div class="col-lg-12 text-left">
                         <div class="total" style="margin-top: 5px !important;">
                             <strong>{{$lang=='fr' ? 'Informations spécifiques' : 'Notes'}}: </strong>
-                            <p class="mt-3" style="font-size:12px"><?=nl2br($template[0]->notes)?></p>
+                            <p class="mt-3" style="font-size:12px"><?=nl2br($template_data[0]->notesestimateid!= Null ? $notetemp->note : $template[0]->notes)?></p>
                         </div>
                     </div>
                     <div class="col-lg-12 text-left">

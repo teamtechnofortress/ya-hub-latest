@@ -77,7 +77,7 @@ tr > td{
                         @endif --}}
                     </div>
                     <div class="col-lg-6">
-                            <input name="invoice_no" type="text" class="form-control" style="margin-bottom: 5px !important" value="{{$template_data[0]->invoice_no}}">
+                            <input name="invoice_no" type="text" class="form-control" style="margin-bottom: 5px !important" value="{{$template_data[0]->invoice_no}}" {{$template[0]->maintempid != NULL ? 'readonly' : '' }}>
                             <textarea name="date_desc" class="form-control">{{$template[0]->date_desc}}</textarea>
                     </div>
                     </div>
@@ -183,7 +183,129 @@ tr > td{
                         </div>
                     </div>
                     <div class="row mt-50">
-                        <div class="col-lg-12 text-left">
+                        @if($template[0]->maintempid == NULL)
+                            <div class="col-lg-12 text-left">
+                                <div class="total">
+                                    <strong class="or">{{$lang=='fr' ? 'À payer' : 'Total Due'}}: {{$lang=='en' ? $currency : ''}} <span class="total_gross or">{{$total_gross}}</span>{{$lang=='fr' ? $currency : ''}}</strong>
+                                </div>
+                                <div class="total" style="margin-top: 5px !important;">
+                                    <strong>{{$lang=='fr' ? 'Mode de règlement' : 'Payment Type'}}: <input type="text" class="form-control" value="{{$template[0]->payment_type}}" name="payment_type"></strong>
+                                </div>
+                            </div>
+                            <div class="col-lg-12 text-left">
+                                <div class="total" style="margin-top: 5px !important;">
+                                    <strong>{{$lang=='fr' ? 'Date limite de règlement' : 'Due Date'}}: <input type="text" class="form-control" value="{{$template[0]->due_date}}" name="due_date"></strong>
+                                </div>
+                            </div>
+                            <div class="col-lg-12 text-left">
+                                <div class="total" style="margin-top: 5px !important;">
+                                    <strong>{{$lang=='fr' ? 'Informations spécifiques' : 'Notes'}}: 
+                                    <textarea class="form-control"name="notes" rows="10">{{$template[0]->notes}}</textarea>
+                                </strong>
+                                </div>
+                            </div>
+                        @else
+                                @php
+                                    $dept = DB::table('departments')
+                                                ->where('created_by', Auth::user()->id)
+                                                ->where('active', 1)
+                                                ->first();
+
+                                    $maintmps = DB::table('main_templatefor_deps')
+                                                ->where('user_id', Auth::user()->id)
+                                                ->where('depid',$dept->id)
+                                                ->get();
+
+                                    $maintmp = DB::table('main_templatefor_deps')
+                                                ->where('id', $template[0]->maintempid)
+                                                ->where('user_id', Auth::user()->id)
+                                                ->get();
+                                    // $mainTmp = $maintmps->merge($maintmp);
+                                    $notetempsArray = $maintmps->toArray();
+                                    $notetempArray = $maintmp->toArray();
+
+                                    // Combine arrays, but filter out duplicates based on 'id'
+                                    $combinedArray = $notetempsArray;
+
+                                    foreach ($notetempArray as $note) {
+                                        // Check if the note is already in the combined array
+                                        $exists = false;
+                                        foreach ($combinedArray as $existingNote) {
+                                            if ($existingNote->id == $note->id) {
+                                                $exists = true;
+                                                break;
+                                            }
+                                        }
+                                        if (!$exists) {
+                                            $combinedArray[] = $note;
+                                        }
+                                    }
+                                    // Convert the array back to a collection
+                                    $mainTmp = collect($combinedArray);
+                    
+                                    $notetemps = DB::table('note_templatefor_deps')
+                                                ->where('user_id', Auth::user()->id)
+                                                ->where('depid',$dept->id)
+                                                ->where('notefor','purchaseOrder')
+                                                ->get();
+
+                                    $notetemp = DB::table('note_templatefor_deps')
+                                                ->where('id', $template[0]->notespoid)
+                                                ->where('user_id', Auth::user()->id)
+                                                ->where('notefor','purchaseOrder')
+                                                ->get();
+
+                                                $notetempsArray = $notetemps->toArray();
+                                                $notetempArray = $notetemp->toArray();
+
+                                                // Combine arrays, but filter out duplicates based on 'id'
+                                                $combinedArray = $notetempsArray;
+
+                                                foreach ($notetempArray as $note) {
+                                                    // Check if the note is already in the combined array
+                                                    $exists = false;
+                                                    foreach ($combinedArray as $existingNote) {
+                                                        if ($existingNote->id == $note->id) {
+                                                            $exists = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                    if (!$exists) {
+                                                        $combinedArray[] = $note;
+                                                    }
+                                                }
+                                                // Convert the array back to a collection
+                                                $noteTemp = collect($combinedArray);
+                    
+                                @endphp
+                                {{-- {{$notetemps}} --}}
+                                <div class="col-lg-12 text-left">
+                                    <div class="form-group mt-4">
+                                        <label for="contact">Main Template</label>
+                                        <select class="custom-select" name="maintempid" required>
+                                            <option value="">Open this select Main Temp</option>
+                                            @foreach($mainTmp as $item)
+                                            <option value="{{ $item->id }}" {{ $item->id == $template[0]->maintempid ? 'selected' : '' }}>{{ $item->tempName}}</option>
+                                            @endforeach
+                                        </select>
+                                        {{-- {{$template[0]->maintempid}}
+                                        {{$template[0]->noteid}} --}}
+
+                                    </div>
+                                </div>   
+                                {{-- <div class="col-lg-12 text-left">
+                                    <div class="form-group mt-4">
+                                        <label for="contact">Notes Template</label>
+                                        <select class="custom-select" name="notestempid" required>
+                                            <option value="">Open this select Note</option>
+                                            @foreach($noteTemp as $item)
+                                            <option value="{{ $item->id }}" {{ $item->id == $template[0]->notespoid ? 'selected' : '' }}>{{ $item->notename }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div> --}}
+                        @endif
+                        {{-- <div class="col-lg-12 text-left">
                             <div class="total">
                                 <strong class="or">Total due: {{$currency}} <span class="total_gross or">{{number_format($total_gross,2,'.','')}}</span></strong>
                             </div>
@@ -202,7 +324,7 @@ tr > td{
                                 <textarea class="form-control"name="notes" rows="10">{{$template[0]->notes}}</textarea>
                             </strong>
                             </div>
-                        </div>
+                        </div> --}}
                         <div class="col-lg-12 text-left">
                             <div class="total" style="margin-top: 50px !important;">
                                 <h5>Buyer's signature</h5>

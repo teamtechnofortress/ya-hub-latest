@@ -11,6 +11,10 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Config;
+use App\Models\MainTemplateforDep;
+use App\Models\NoteTemplateforDep;
+use App\Models\Refrencetable;
+use Illuminate\Support\Facades\DB;
 
 class LiteAgency extends Controller
 {
@@ -268,12 +272,6 @@ class LiteAgency extends Controller
     /* Send Mail */
     public function sendmail(Request $request){
         try{
-            // $user = Auth::user();
-            // $sender_email = $user->email;
-            // $sender_email = "zunubutt41016@gmail.com";
-            // Config::set('mail.from.address', $sender_email);
-            // Config::set('mail.from.name', 'Zunu'); 
-            // return $sender_email;
             $files = [];
             if($request->file('images')){
                 foreach($request->file('images') as $file){
@@ -286,8 +284,9 @@ class LiteAgency extends Controller
             $data["title"] = $request->title;
             $data["body"] = $request->description;
             
-            Mail::send('emails.email', $data, function($message)use($data,$files){
-                  $message->to($data["email"], $data["email"])
+            $res=Mail::send('emails.email', $data, function($message)use($data, $files){
+                // $message->from(Auth::user()->email, Auth::user()->name)
+                        $message->to($data["email"], $data["email"])
                         ->subject($data["title"]);
                 if(count($files)){
                     foreach ($files as $file){
@@ -295,12 +294,14 @@ class LiteAgency extends Controller
                     }
                 }
             });
+            return $res;
             return redirect()->back()->withSuccess('Mail Sent Successfully!');
         }
         catch(Throwable $e){
             return $e;
         }
     }
+
 
 
         /********** Invoices  ************/
@@ -332,7 +333,16 @@ class LiteAgency extends Controller
     /* Add New Invoice */
     public function addInvoice(){
         $template = \DB::table('templates')->where('id',1)->get();
-        return view('lite-agency.invoices.addInvoice',compact('template'));
+
+        $dept = DB::table('departments')
+            ->where('created_by', Auth::user()->id)
+            ->where('active', 1)
+            ->first();
+
+        $temp = MainTemplateforDep::where('depid',$dept->id)->get();
+        $notetemp = NoteTemplateforDep::where('depid',$dept->id)->where('notefor','invoice')->get();
+
+        return view('lite-agency.invoices.addInvoice',compact('template','temp','notetemp'));
     }
 
     /* Add post new Invoice */
@@ -353,22 +363,74 @@ class LiteAgency extends Controller
                     $file->move('uploads', $filename);
                     $signature = asset("uploads/".$filename);
                 }
+
+                $temp = MainTemplateforDep::where('id',$request->input('maintempid'))->first();
+                $notetemp = NoteTemplateforDep::where('id',$temp->Notesforinvoice)->first();
+                $check = $temp->refnumber;
+                // $extractedDigits = substr($check, 0, -3);
+
+                    // Extract the numeric part from the end of the string
+                    $numericPart = substr($check, -3);
+                    
+                    // Increment the numeric part
+                    $newNumericPart = (int)$numericPart + 1;
+                    
+                    // Construct the new refnumber with the incremented numeric part
+                    $newref = substr($check, 0, -3) . str_pad($newNumericPart, 3, '0', STR_PAD_LEFT);
+                    
+                    // Update the $temp object with the new refnumber
+                    $temp->refnumber = $newref;
+                    $temp->save();
+
+                // $template_id = \DB::table('template_data')->insertGetId([
+                //     "user_id" => Auth::user()->id,
+                //     "template_id" => 1,
+                //     "invoice_no" => $request->invoice_no,
+                //     "date_desc" => $request->date_desc,
+                //     "info" => $request->info,
+                //     "info2" => $request->info2,
+                //     "table_title" => $request->table_title,
+                //     "payment_type" => $request->payment_type,
+                //     "due_date" => $request->due_date,
+                //     "total" => $total,
+                //     "notes" => $request->notes,
+                //     "seller_signature" => $signature,
+                //     "footer" => $request->footer,
+                //     "is_saved" => 1
+                // ]);
                 $template_id = \DB::table('template_data')->insertGetId([
                     "user_id" => Auth::user()->id,
                     "template_id" => 1,
-                    "invoice_no" => $request->invoice_no,
+                    // "invoice_no" => $request->invoice_no,
                     "date_desc" => $request->date_desc,
                     "info" => $request->info,
                     "info2" => $request->info2,
-                    "table_title" => $request->table_title,
-                    "payment_type" => $request->payment_type,
-                    "due_date" => $request->due_date,
                     "total" => $total,
-                    "notes" => $request->notes,
+                    "table_title" => $request->table_title,
+                    "payment_type" => $temp->paymentType,
+                    "due_date" => $temp->dueDate,
+                    "notes" => $notetemp->note,
+                    "invoice_no" => $temp->refnumber,
                     "seller_signature" => $signature,
                     "footer" => $request->footer,
-                    "is_saved" => 1
+                    "is_saved" => 1,
+                    "maintempid" => $request->input('maintempid'),
+                    "Notesforinvoice" => $notetemp->id
                 ]);
+
+                $dept = DB::table('departments')
+                    ->where('created_by', Auth::user()->id)
+                    ->where('active', 1)
+                    ->first();
+
+                $refrancetable = new Refrencetable;
+                $refrancetable->tmpidfromtemptable = $template_id;
+                $refrancetable->depid = $dept->id;
+                $refrancetable->maintempid = $request->input('maintempid');
+                $refrancetable->notetempid = $request->input('notestempid');
+                $refrancetable->user_id = Auth::user()->id;
+                $refrancetable->save();
+
                 if($request->has('item') && count($request->item) > 0){
                     foreach($request->item as $key=>$val){
                         $res = \DB::table('template_items')->insert([
@@ -442,20 +504,76 @@ class LiteAgency extends Controller
                 $file->move('uploads', $filename);
                 $signature = asset("uploads/".$filename);
             }
-            $template_data = \DB::table('template_data')->where('id',$request->invoice_id)->update([
-                "invoice_no" => $request->invoice_no,
-                "date_desc" => $request->date_desc,
-                "info" => $request->info,
-                "info2" => $request->info2,
-                "table_title" => $request->table_title,
-                "payment_type" => $request->payment_type,
-                "total" => $total,
-                "due_date" => $request->due_date,
-                "notes" => $request->notes,
-                "seller_signature" => $signature,
-                "footer" => $request->footer,
-                "is_saved" => 1
-            ]);
+            if($request->maintempid)
+            {
+                
+                $temp = MainTemplateforDep::where('id',$request->input('maintempid'))->first();
+                // return $temp;
+                $notetemp = NoteTemplateforDep::where('id',$temp->Notesforinvoice)->first();
+                $check = $temp->refnumber;
+                 // $extractedDigits = substr($check, 0, -3);
+
+                // Extract the numeric part from the end of the string
+                $numericPart = substr($check, -3);
+                
+                // Increment the numeric part
+                $newNumericPart = (int)$numericPart + 1;
+                
+                // Construct the new refnumber with the incremented numeric part
+                $newref = substr($check, 0, -3) . str_pad($newNumericPart, 3, '0', STR_PAD_LEFT);
+                
+                // Update the $temp object with the new refnumber
+                $temp->refnumber = $newref;
+                $temp->save();
+
+                $template_data = \DB::table('template_data')->where('id',$request->invoice_id)->update([
+                    "invoice_no" => $temp->refnumber,
+                    "date_desc" => $request->date_desc,
+                    "info" => $request->info,
+                    "info2" => $request->info2,
+                    "table_title" => $request->table_title,
+                    "payment_type" => $request->payment_type,
+                    "total" => $total,
+                    "due_date" => $temp->dueDate,
+                    "notes" => $notetemp->note,
+                    "seller_signature" => $signature,
+                    "footer" => $request->footer,
+                    "is_saved" => 1,
+                    "maintempid" => $request->maintempid,
+                    "Notesforinvoice" => $notetemp->id
+                ]);
+                
+            }
+            else {
+                $template_data = \DB::table('template_data')->where('id',$request->invoice_id)->update([
+                    "invoice_no" => $request->invoice_no,
+                    "date_desc" => $request->date_desc,
+                    "info" => $request->info,
+                    "info2" => $request->info2,
+                    "table_title" => $request->table_title,
+                    "payment_type" => $request->payment_type,
+                    "total" => $total,
+                    "due_date" => $request->due_date,
+                    "notes" => $request->notes,
+                    "seller_signature" => $signature,
+                    "footer" => $request->footer,
+                    "is_saved" => 1
+                ]);
+            }
+            // $template_data = \DB::table('template_data')->where('id',$request->invoice_id)->update([
+            //     "invoice_no" => $request->invoice_no,
+            //     "date_desc" => $request->date_desc,
+            //     "info" => $request->info,
+            //     "info2" => $request->info2,
+            //     "table_title" => $request->table_title,
+            //     "payment_type" => $request->payment_type,
+            //     "total" => $total,
+            //     "due_date" => $request->due_date,
+            //     "notes" => $request->notes,
+            //     "seller_signature" => $signature,
+            //     "footer" => $request->footer,
+            //     "is_saved" => 1
+            // ]);
             $template_items = \DB::table('template_items')->where('data_id',$request->invoice_id)->delete();
             if($request->has('item') && count($request->item) > 0){
                 foreach($request->item as $key=>$val){
@@ -583,7 +701,15 @@ class LiteAgency extends Controller
     /* Add New Estimate */
     public function addEstimate(){
         $template = \DB::table('templates')->where('id',2)->get();
-        return view('lite-agency.estimates.addEstimate',compact('template'));
+        $dept = DB::table('departments')
+        ->where('created_by', Auth::user()->id)
+        ->where('active', 1)
+        ->first();
+
+        $temp = MainTemplateforDep::where('depid',$dept->id)->get();
+        $notetemp = NoteTemplateforDep::where('depid',$dept->id)->where('notefor','estimate')->get();
+
+        return view('lite-agency.estimates.addEstimate',compact('template','temp','notetemp'));
     }
 
     /* Add post new Estimate */
@@ -604,22 +730,73 @@ class LiteAgency extends Controller
                     $file->move('uploads', $filename);
                     $signature = asset("uploads/".$filename);
                 }
+                $temp = MainTemplateforDep::where('id',$request->input('maintempid'))->first();
+                $notetemp = NoteTemplateforDep::where('id',$temp->notesestimateid)->first();
+                // return $notetemp;
+                $check = $temp->refnumber;
+                // $extractedDigits = substr($check, 0, -3);
+
+                    // Extract the numeric part from the end of the string
+                    $numericPart = substr($check, -3);
+                    
+                    // Increment the numeric part
+                    $newNumericPart = (int)$numericPart + 1;
+                    
+                    // Construct the new refnumber with the incremented numeric part
+                    $newref = substr($check, 0, -3) . str_pad($newNumericPart, 3, '0', STR_PAD_LEFT);
+                    
+                    // Update the $temp object with the new refnumber
+                    $temp->refnumber = $newref;
+                    $temp->save();
+
+                // $template_id = \DB::table('template_data')->insertGetId([
+                //     "user_id" => Auth::user()->id,
+                //     "template_id" => 2,
+                //     "invoice_no" => $request->invoice_no,
+                //     "date_desc" => $request->date_desc,
+                //     "info" => $request->info,
+                //     "info2" => $request->info2,
+                //     "table_title" => $request->table_title,
+                //     "total" => $total,
+                //     "payment_type" => $request->payment_type,
+                //     "due_date" => $request->due_date,
+                //     "notes" => $request->notes,
+                //     "seller_signature" => $signature,
+                //     "footer" => $request->footer,
+                //     "is_saved" => 1
+                // ]);
                 $template_id = \DB::table('template_data')->insertGetId([
                     "user_id" => Auth::user()->id,
-                    "template_id" => 2,
-                    "invoice_no" => $request->invoice_no,
+                    "template_id" =>  2,
                     "date_desc" => $request->date_desc,
                     "info" => $request->info,
                     "info2" => $request->info2,
-                    "table_title" => $request->table_title,
                     "total" => $total,
-                    "payment_type" => $request->payment_type,
-                    "due_date" => $request->due_date,
-                    "notes" => $request->notes,
+                    "table_title" => $request->table_title,
+                    "invoice_no" => $temp->refnumber,
+                    "payment_type" => $temp->paymentType,
+                    "notes" => $notetemp->note,
+                    "maintempid" => $request->input('maintempid'),
+                    "notesestimateid" => $notetemp->id,
                     "seller_signature" => $signature,
                     "footer" => $request->footer,
                     "is_saved" => 1
+                    
                 ]);
+    
+                $dept = DB::table('departments')
+                    ->where('created_by', Auth::user()->id)
+                    ->where('active', 1)
+                    ->first();
+    
+                $refrancetable = new Refrencetable;
+                $refrancetable->tmpidfromtemptable = $template_id;
+                $refrancetable->depid = $dept->id;
+                $refrancetable->maintempid = $request->input('maintempid');
+                $refrancetable->notetempid = $request->input('notestempid');
+                $refrancetable->user_id = Auth::user()->id;
+                $refrancetable->save();
+
                 if($request->has('item') && count($request->item) > 0){
                     foreach($request->item as $key=>$val){
                         $res = \DB::table('template_items')->insert([
@@ -848,7 +1025,16 @@ class LiteAgency extends Controller
     /* Add New purchase Order */
     public function addPurchaseOrder(){
         $template = \DB::table('templates')->where('id',3)->get();
-        return view('lite-agency.purchaseOrder.addPurchaseOrder',compact('template'));
+
+        $dept = DB::table('departments')
+        ->where('created_by', Auth::user()->id)
+        ->where('active', 1)
+        ->first();
+
+        $temp = MainTemplateforDep::where('depid',$dept->id)->get();
+        $notetemp = NoteTemplateforDep::where('depid',$dept->id)->where('notefor','purchaseOrder')->get();
+
+        return view('lite-agency.purchaseOrder.addPurchaseOrder',compact('template','temp','notetemp'));
     }
 
     /* Add post new Purchase Order */
@@ -869,22 +1055,72 @@ class LiteAgency extends Controller
                     $file->move('uploads', $filename);
                     $signature = asset("uploads/".$filename);
                 }
+                $temp = MainTemplateforDep::where('id',$request->input('maintempid'))->first();
+
+                $notetemp = NoteTemplateforDep::where('id',$temp->notespoid)->first();
+
+                $check = $temp->refnumber;
+                // $extractedDigits = substr($check, 0, -3);
+
+                    // Extract the numeric part from the end of the string
+                    $numericPart = substr($check, -3);
+                    
+                    // Increment the numeric part
+                    $newNumericPart = (int)$numericPart + 1;
+                    
+                    // Construct the new refnumber with the incremented numeric part
+                    $newref = substr($check, 0, -3) . str_pad($newNumericPart, 3, '0', STR_PAD_LEFT);
+                    
+                    // Update the $temp object with the new refnumber
+                    $temp->refnumber = $newref;
+                    $temp->save();
+                // $template_id = \DB::table('template_data')->insertGetId([
+                //     "user_id" => Auth::user()->id,
+                //     "template_id" => 3,
+                //     "invoice_no" => $request->invoice_no,
+                //     "date_desc" => $request->date_desc,
+                //     "info" => $request->info,
+                //     "info2" => $request->info2,
+                //     "table_title" => $request->table_title,
+                //     "payment_type" => $request->payment_type,
+                //     "total" => $total,
+                //     "due_date" => $request->due_date,
+                //     "notes" => $request->notes,
+                //     "seller_signature" => $signature,
+                //     "footer" => $request->footer,
+                //     "is_saved" => 1
+                // ]);
                 $template_id = \DB::table('template_data')->insertGetId([
                     "user_id" => Auth::user()->id,
                     "template_id" => 3,
-                    "invoice_no" => $request->invoice_no,
+                    "invoice_no" => $temp->refnumber,
                     "date_desc" => $request->date_desc,
                     "info" => $request->info,
                     "info2" => $request->info2,
                     "table_title" => $request->table_title,
-                    "payment_type" => $request->payment_type,
+                    "payment_type" => $temp->paymentType,
+                    "due_date" => $temp->dueDate,
                     "total" => $total,
-                    "due_date" => $request->due_date,
-                    "notes" => $request->notes,
+                    "notes" => $notetemp->note,
                     "seller_signature" => $signature,
                     "footer" => $request->footer,
-                    "is_saved" => 1
+                    "is_saved" => 1,
+                    "notespoid" => $notetemp->id,
+                    "maintempid" => $request->input('maintempid')
                 ]);
+    
+                $dept = DB::table('departments')
+                    ->where('created_by', Auth::user()->id)
+                    ->where('active', 1)
+                    ->first();
+    
+                $refrancetable = new Refrencetable;
+                $refrancetable->tmpidfromtemptable = $template_id;
+                $refrancetable->depid = $dept->id;
+                $refrancetable->maintempid = $request->input('maintempid');
+                $refrancetable->notetempid = $request->input('notestempid');
+                $refrancetable->user_id = Auth::user()->id;
+                $refrancetable->save();
                 if($request->has('item') && count($request->item) > 0){
                     foreach($request->item as $key=>$val){
                         $res = \DB::table('template_items')->insert([

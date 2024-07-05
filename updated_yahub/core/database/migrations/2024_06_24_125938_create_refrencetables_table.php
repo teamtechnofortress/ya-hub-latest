@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateNoteTemplateforDepsTable extends Migration
+class CreateRefrencetablesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,13 @@ class CreateNoteTemplateforDepsTable extends Migration
      */
     public function up()
     {
-        Schema::create('note_templatefor_deps', function (Blueprint $table) {
+        Schema::create('refrencetables', function (Blueprint $table) {
             $table->id();
-            $table->string('notename')->nullable();
-            $table->string('note')->nullable();
-            $table->text('notefor')->nullable();
+            $table->integer('tmpidfromtemptable')->nullable();
             $table->integer('depid')->nullable();
+            $table->integer('maintempid')->nullable();
+            $table->integer('notetempid')->nullable();
+            $table->integer('user_id');
             $table->timestamps();
         });
     }
@@ -30,6 +31,6 @@ class CreateNoteTemplateforDepsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('note_templatefor_deps');
+        Schema::dropIfExists('refrencetables');
     }
 }
